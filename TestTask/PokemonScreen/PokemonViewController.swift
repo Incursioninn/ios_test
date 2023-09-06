@@ -10,8 +10,6 @@ import UIKit
 protocol AnyPokemonView {
     
     var presenter : AnyPokemonPresenter? {get set}
-    func updateSwitchOn()
-    func updateSwitchOff()
     
 }
 
@@ -64,13 +62,6 @@ class PokemonViewController: UIViewController , AnyPokemonView{
         }
     }
     
-    func updateSwitchOn() {
-        addToFavSwitch.setOn(true, animated: true)
-    }
-    
-    func updateSwitchOff() {
-        addToFavSwitch.setOn(false, animated: true)
-    }
     
     
     

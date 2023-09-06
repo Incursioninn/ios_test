@@ -61,6 +61,8 @@ class MainPresenter : AnyMainPresenter {
         interactor?.fetchPokemons(offset: offset)
     }
     
+    
+    
 
     
     

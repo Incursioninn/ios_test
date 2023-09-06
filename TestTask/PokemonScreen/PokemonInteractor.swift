@@ -23,13 +23,11 @@ class PokemonInteractor : AnyPokemonInteractor {
         var favs = UserDefaults.standard.array(forKey: "Favs") as? [Int] ?? []
         favs.append(pokemon.id)
         UserDefaults.standard.set(favs, forKey: "Favs")
-        presenter?.pokemonAddedToFav()
         
     }
     
     func deletePokemonFromFav(pokemon: RealmModel) {
         let favs = UserDefaults.standard.array(forKey: "Favs") as? [Int] ?? []
         UserDefaults.standard.set(favs.filter{$0 != pokemon.id}, forKey: "Favs")
-        presenter?.pokemonDeletedFromFavs()
     }
 }

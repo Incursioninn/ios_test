@@ -16,8 +16,6 @@ protocol AnyPokemonPresenter {
     func userDidAddToFav(pokemon : RealmModel)
     func userDeletedFromFav(pokemon : RealmModel)
     
-    func pokemonAddedToFav()
-    func pokemonDeletedFromFavs()
     
 }
 
@@ -31,9 +29,6 @@ class PokemonPresenter : AnyPokemonPresenter {
     var router: AnyPokemonRouter?
     
     
-    func pokemonDeletedFromFavs() {
-        view?.updateSwitchOff()
-    }
     
     
     
@@ -46,9 +41,6 @@ class PokemonPresenter : AnyPokemonPresenter {
         interactor?.addPokemonToFav(pokemon :pokemon)
     }
     
-    func pokemonAddedToFav() {
-        view?.updateSwitchOn()
-    }
     
     
 }
