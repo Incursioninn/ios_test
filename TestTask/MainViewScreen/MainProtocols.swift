@@ -23,7 +23,7 @@ protocol MainInteractorProtocol : AnyObject {
     
     func fetchPokemons(offset:Int)
     var  presenter : InteractorToPresenterProtocol? {get set}
-    func showFavs()
+    func getFavs()
     
 }
 //MARK: MainRouterProtocol

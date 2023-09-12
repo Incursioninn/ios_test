@@ -25,7 +25,7 @@ class MainPresenter : MainPresenterProtocol {
 extension MainPresenter : ViewToPresenterProtocol {
 
     func showFavs() {
-        interactor?.showFavs()
+        interactor?.getFavs()
     }
 
     func fetchPokemons(offset: Int) {

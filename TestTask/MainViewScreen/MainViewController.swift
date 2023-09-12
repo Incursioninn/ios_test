@@ -18,10 +18,8 @@ class MainViewController: UIViewController , MainViewProtocol {
     @IBOutlet weak var progressBar: UIProgressView!
     
     
-    var tempPokemons : [RealmModel] = []
     var pokemons : [RealmModel] = []
     var favPokemons : [RealmModel] = []
-    var filterPokemons : [RealmModel] = []
     var presenter : ViewToPresenterProtocol?
     var progressValue = 0.0
     var progressValueOffset = 0.0
@@ -45,10 +43,8 @@ class MainViewController: UIViewController , MainViewProtocol {
     
     
     func update(with pokemons : RealmModel) {
-        DispatchQueue.main.async {
             self.connectionProblemsLabel.isHidden = true
             self.pokemons.append(pokemons)
-            self.tempPokemons.append(pokemons)
             let path = IndexPath(row: self.pokemons.count-1, section: 0)
             self.pokemonTableView.beginUpdates()
             self.pokemonTableView.insertRows(at: [path], with: .left)
@@ -58,7 +54,6 @@ class MainViewController: UIViewController , MainViewProtocol {
             if self.progressValue >= 1.0 {
                 self.progressBar.isHidden = true
             }
-        }
         
     }
     
@@ -66,7 +61,6 @@ class MainViewController: UIViewController , MainViewProtocol {
             self.progressValue = 1.0
             self.connectionProblemsLabel.isHidden = false
             self.pokemons = pokemons
-            self.tempPokemons = pokemons
             self.progressBar.isHidden = true
             self.pokemonTableView.reloadData()
         
@@ -79,6 +73,7 @@ class MainViewController: UIViewController , MainViewProtocol {
     }
     
     @objc func showFavs (paramTarget : UISwitch) {
+        let tempPokemons = RealmModel.getData()
         if (favSwitch.isOn) {
             presenter?.showFavs()
         }
@@ -115,7 +110,7 @@ extension MainViewController : UITableViewDelegate , UITableViewDataSource , UIS
         }
         else {
             cell.imageView?.downloadAndSavePokemonImage(link: pokeUrl, pokeName: pokeName)
-            pokemonTableView.reloadRows(at: [indexPath], with: .none)
+            //pokemonTableView.reloadRows(at: [indexPath], with: .none)
         }
 
         return cell
@@ -140,10 +135,11 @@ extension MainViewController : UITableViewDelegate , UITableViewDataSource , UIS
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
-        self.filterPokemons.removeAll()
+        var filterPokemons : [RealmModel] = []
+        let originalPokes = RealmModel.getData()
         guard !searchText.isEmpty else {
             if !favSwitch.isOn {
-                self.pokemons = tempPokemons
+                self.pokemons = originalPokes
             }
             else {
                 self.pokemons = favPokemons
@@ -164,7 +160,7 @@ extension MainViewController : UITableViewDelegate , UITableViewDataSource , UIS
             }
         }
         else {
-            for pokemon in tempPokemons {
+            for pokemon in originalPokes {
                 let text = searchText.lowercased()
                 let isArrayContain = pokemon.name.lowercased().range(of: text)
                 
@@ -186,7 +182,7 @@ extension UIImageView {
         self.image = .add
         guard let url = URL(string: link) else {return}
         URLSession.shared.dataTask(with: url) { (data,response , error) in
-            guard let data = data else {return}
+            guard let data = data, error == nil else {return}
             let image = UIImage(data: data)
             let fileManager = FileManager.default
             let documentDirectory = try! fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
