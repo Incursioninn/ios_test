@@ -7,42 +7,21 @@
 
 import UIKit
 
-typealias EntryPoint = AnyMainView & UIViewController
 
-protocol AnyMainRouter {
-    
-    var entry : EntryPoint? {get}
-    static func start () -> AnyMainRouter
-    func openPokemon(pokemon : RealmModel)
-    
-}
 
-class MainRouter : AnyMainRouter {
-    var entry : EntryPoint?
-    weak var viewController : MainViewController?
+
+
+class MainRouter : MainRouterProtocol {
     
-    static func start() -> AnyMainRouter {
-        let router = MainRouter()
-        var interactor : AnyMainInteractor = MainInteractor()
-        var presenter : AnyMainPresenter = MainPresenter()
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let view = storyboard.instantiateViewController(withIdentifier: "Main") as! MainViewController
-        
-        view.presenter = presenter
-        
-        interactor.presenter = presenter
-        
-        presenter.view = view
-        presenter.interactor = interactor
-        presenter.router = router
-        
-        router.entry = view
-        
-        return router
-    }
+    weak var view : MainViewController?
     
     func openPokemon(pokemon: RealmModel) {
-        let vc = PokemonRouter.build(pokemon: pokemon)
-        self.entry?.present(vc, animated: true)
+        let vc = PokemonModuleBuilder.build(pokemon: pokemon)
+        view?.present(vc, animated: true)
     }
+    
+    
+    
+    
+
 }

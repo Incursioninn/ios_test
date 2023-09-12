@@ -7,27 +7,21 @@
 
 import Foundation
 
-protocol AnyPokemonInteractor {
-    var presenter : AnyPokemonPresenter? {get set}
-    
-    func deletePokemonFromFav(pokemon: RealmModel)
-    func addPokemonToFav(pokemon : RealmModel)
-}
 
-class PokemonInteractor : AnyPokemonInteractor {
+
+class PokemonInteractor : PokemonIneractorProtocol {
 
     
-    var presenter: AnyPokemonPresenter?
+    weak var presenter: PokemonPresenterProtocol?
     
     func addPokemonToFav(pokemon : RealmModel) {
-        var favs = UserDefaults.standard.array(forKey: "Favs") as? [Int] ?? []
-        favs.append(pokemon.id)
-        UserDefaults.standard.set(favs, forKey: "Favs")
-        
+
+        PokemonFavsService.shared.addPokemonToFavs(pokemon: pokemon)
     }
     
     func deletePokemonFromFav(pokemon: RealmModel) {
-        let favs = UserDefaults.standard.array(forKey: "Favs") as? [Int] ?? []
-        UserDefaults.standard.set(favs.filter{$0 != pokemon.id}, forKey: "Favs")
+        PokemonFavsService.shared.deletePokemonFromFav(pokemon: pokemon)
     }
+    
+    
 }

@@ -2,40 +2,44 @@
 //  MainPresenter.swift
 //  TestTask
 //
-//  Created by iteco on 31.08.2023.
+//  Created by iteco on 08.09.2023.
 //
 
-import UIKit
+import Foundation
 
-protocol AnyMainPresenter {
+
+class MainPresenter : MainPresenterProtocol {
+    var interactor : MainInteractorProtocol?
+    weak var view : MainViewProtocol?
+    var router : MainRouterProtocol?
     
-    func interactorDidFetchPokemons(with result : RealmModel)
-    func interactorDidFetchPokemons(with result : [RealmModel])
-    func didSelectFavs (favs : [RealmModel])
-    func didTapPokemon (with pokemon : RealmModel)
-    func setProgressValue(count : Int)
-    var view : AnyMainView? {get set}
-    var interactor : AnyMainInteractor? {get set}
-    var router : AnyMainRouter? {get set}
-    func showFavs()
-    func fetchPokemons(offset: Int)
+    init(interactor: MainInteractorProtocol? = nil, view: MainViewProtocol? = nil, router: MainRouterProtocol? = nil) {
+        self.interactor = interactor
+        self.view = view
+        self.router = router
+    }
     
 }
 
-class MainPresenter : AnyMainPresenter {
-    
-    var view : AnyMainView?
-    var router : AnyMainRouter?
-    var interactor : AnyMainInteractor?{
-        didSet{
-            interactor?.fetchPokemons(offset: 0)
-        }
+
+extension MainPresenter : ViewToPresenterProtocol {
+
+    func showFavs() {
+        interactor?.showFavs()
     }
-    
-    
-    func setProgressValue(count: Int) {
-        view?.setProgressBarOffset(count : count)
+
+    func fetchPokemons(offset: Int) {
+        interactor?.fetchPokemons(offset: offset)
     }
+
+    func didTapPokemon(with pokemon: RealmModel) {
+        router?.openPokemon(pokemon: pokemon)
+    }
+
+
+}
+
+extension MainPresenter : InteractorToPresenterProtocol {
     
     func interactorDidFetchPokemons(with result: RealmModel) {
         view?.update(with: result)
@@ -45,27 +49,13 @@ class MainPresenter : AnyMainPresenter {
         view?.update(with: result)
     }
     
+    func setProgressValue(count: Int) {
+        view?.setProgressBarOffset(count: count)
+    }
+    
     func didSelectFavs(favs: [RealmModel]) {
         view?.updateWithFavs(favs: favs)
     }
-    
-    func didTapPokemon(with pokemon : RealmModel) {
-        router?.openPokemon(pokemon: pokemon)
-    }
-    
-    func showFavs() {
-        interactor?.showFavs()
-    }
-    
-    func fetchPokemons(offset: Int) {
-        interactor?.fetchPokemons(offset: offset)
-    }
-    
-    
-    
-
-    
-    
     
     
 }

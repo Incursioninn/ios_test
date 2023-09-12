@@ -7,49 +7,25 @@
 
 import UIKit
 
-protocol AnyPokemonView {
-    
-    var presenter : AnyPokemonPresenter? {get set}
-    
-}
 
-class PokemonViewController: UIViewController , AnyPokemonView{
+
+class PokemonViewController: UIViewController , PokemonViewProtocol{
     
     @IBOutlet weak var pokemonImageView: UIImageView!
     @IBOutlet weak var pokemonNameLabel: UILabel!
     @IBOutlet weak var pokemonHeight: UILabel!
     @IBOutlet weak var pokemonWeight: UILabel!
     @IBOutlet weak var addToFavSwitch: UISwitch!
-    
     @IBOutlet weak var favLabel: UILabel!
     var pokemon : RealmModel?
     
-    var presenter: AnyPokemonPresenter?
+    var presenter: PokemonPresenterProtocol?
     
-    let favArray :[Int] = UserDefaults.standard.array(forKey: "Favs") as? [Int] ?? []
-
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        addToFavSwitch.isEnabled = true
-        if favArray.contains(pokemon!.id) {
-            addToFavSwitch.setOn(true, animated: true)
-        }
-        else {
-            addToFavSwitch.setOn(false, animated: true)
-        }
-            
+        setupInfo()
         addToFavSwitch.addTarget(self, action: #selector (onSwitchOn(paramTarget:)), for: .valueChanged)
-        pokemonNameLabel.text = pokemon?.name.capitalized
-        pokemonHeight.text = "Height: \(pokemon?.height ?? 0)"
-        pokemonWeight.text = "Weight: \(pokemon?.weight ?? 0)"
-        favLabel.text = "Favourite"
-        let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString
-        let getImagePath = paths.appendingPathComponent(pokemon!.name)
-        let image = UIImage(contentsOfFile: getImagePath)
-        self.pokemonImageView.image = image
-        
-
        
     }
     
@@ -61,6 +37,21 @@ class PokemonViewController: UIViewController , AnyPokemonView{
             presenter?.userDeletedFromFav(pokemon: pokemon!)
         }
     }
+    
+    
+    
+    func setupInfo () {
+        pokemonNameLabel.text = pokemon?.name.capitalized
+        pokemonHeight.text = "Height: \(pokemon?.height ?? 0)"
+        pokemonWeight.text = "Weight: \(pokemon?.weight ?? 0)"
+        favLabel.text = "Favourite"
+        let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as NSString
+        let getImagePath = paths.appendingPathComponent(pokemon!.name)
+        let image = UIImage(contentsOfFile: getImagePath)
+        self.pokemonImageView.image = image
+        pokemon!.isFavourite ? addToFavSwitch.setOn(true, animated: true) : addToFavSwitch.setOn(false, animated: true)
+    }
+
     
     
     

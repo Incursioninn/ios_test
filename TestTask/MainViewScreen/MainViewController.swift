@@ -6,17 +6,9 @@
 //
 import UIKit
 
-protocol AnyMainView {
-    
-    func update (with pokemon : RealmModel)
-    func update (with pokemon : [RealmModel])
-    func updateWithFavs( favs : [RealmModel])
-    func setProgressBarOffset(count : Int)
-    var presenter : AnyMainPresenter? {get set}
-    
-}
 
-class MainViewController: UIViewController , AnyMainView {
+
+class MainViewController: UIViewController , MainViewProtocol {
     
     
     @IBOutlet weak var favSwitch: UISwitch!
@@ -28,14 +20,17 @@ class MainViewController: UIViewController , AnyMainView {
     
     var tempPokemons : [RealmModel] = []
     var pokemons : [RealmModel] = []
+    var favPokemons : [RealmModel] = []
     var filterPokemons : [RealmModel] = []
-    var presenter : AnyMainPresenter?
+    var presenter : ViewToPresenterProtocol?
     var progressValue = 0.0
     var progressValueOffset = 0.0
     
     override func viewDidLoad() {
         
         super.viewDidLoad()
+        
+        presenter?.fetchPokemons(offset: 0)
         pokemonTableView.register(UITableViewCell.self, forCellReuseIdentifier: "pokemonCell")
         favSwitch.setOn(false, animated: true)
         connectionProblemsLabel.isHidden = true
@@ -45,6 +40,7 @@ class MainViewController: UIViewController , AnyMainView {
         searchBar.delegate = self
         
     }
+    
     
     
     
@@ -67,19 +63,18 @@ class MainViewController: UIViewController , AnyMainView {
     }
     
     func update(with pokemons : [RealmModel]) {
-        DispatchQueue.main.async {
             self.progressValue = 1.0
             self.connectionProblemsLabel.isHidden = false
             self.pokemons = pokemons
             self.tempPokemons = pokemons
             self.progressBar.isHidden = true
             self.pokemonTableView.reloadData()
-        }
         
     }
     
     func updateWithFavs (favs : [RealmModel]) {
         self.pokemons = favs
+        self.favPokemons = favs
         self.pokemonTableView.reloadData()
     }
     
@@ -122,12 +117,21 @@ extension MainViewController : UITableViewDelegate , UITableViewDataSource , UIS
             cell.imageView?.downloadAndSavePokemonImage(link: pokeUrl, pokeName: pokeName)
             pokemonTableView.reloadRows(at: [indexPath], with: .none)
         }
-        if (indexPath.row+1 == tempPokemons.count && progressValue >= 1.0) {
-            progressValue = 0.0
-            progressBar.isHidden = false
-            presenter?.fetchPokemons(offset: indexPath.row)
-        }
+
         return cell
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let height = scrollView.frame.size.height
+            let contentYOffset = scrollView.contentOffset.y
+            let distanceFromBottom = scrollView.contentSize.height - contentYOffset
+            if distanceFromBottom < height {
+                if (progressValue >= 1.0) {
+                    progressValue = 0.0
+                    progressBar.isHidden = false
+                    presenter?.fetchPokemons(offset: pokemons.count)
+                }
+            }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -138,21 +142,38 @@ extension MainViewController : UITableViewDelegate , UITableViewDataSource , UIS
         
         self.filterPokemons.removeAll()
         guard !searchText.isEmpty else {
-            self.pokemons = tempPokemons
+            if !favSwitch.isOn {
+                self.pokemons = tempPokemons
+            }
+            else {
+                self.pokemons = favPokemons
+            }
             self.pokemonTableView.reloadData()
             return
         }
-        
-        for pokemon in tempPokemons {
-            let text = searchText.lowercased()
-            let isArrayContain = pokemon.name.lowercased().range(of: text)
-            
-            if isArrayContain != nil {
-                filterPokemons.append(pokemon)
+        if favSwitch.isOn {
+            for pokemon in favPokemons {
+                let text = searchText.lowercased()
+                let isArrayContain = pokemon.name.lowercased().range(of: text)
+                
+                if isArrayContain != nil {
+                    filterPokemons.append(pokemon)
+                }
+                
+                
             }
-            
-            
         }
+        else {
+            for pokemon in tempPokemons {
+                let text = searchText.lowercased()
+                let isArrayContain = pokemon.name.lowercased().range(of: text)
+                
+                if isArrayContain != nil {
+                    filterPokemons.append(pokemon)
+                }
+            }
+        }
+
         self.pokemons = filterPokemons
         self.pokemonTableView.reloadData()
     }
@@ -173,7 +194,6 @@ extension UIImageView {
             let imageData = image?.pngData()
             try! imageData?.write(to: fileURL)
             DispatchQueue.main.async {
-                print("downloaded \(pokeName)")
                 self.image = UIImage(contentsOfFile: fileURL.relativePath)
             }
         }.resume()

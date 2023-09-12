@@ -7,26 +7,16 @@
 
 import Foundation
 
-protocol AnyPokemonPresenter {
-    
-    var view: AnyPokemonView? {get set}
-    var interactor : AnyPokemonInteractor? {get set}
-    var router : AnyPokemonRouter? {get set}
-    
-    func userDidAddToFav(pokemon : RealmModel)
-    func userDeletedFromFav(pokemon : RealmModel)
-    
-    
-}
 
-class PokemonPresenter : AnyPokemonPresenter {
+
+class PokemonPresenter : PokemonPresenterProtocol {
 
     
     
     
-    var view : AnyPokemonView?
-    var interactor : AnyPokemonInteractor?
-    var router: AnyPokemonRouter?
+    weak var view : PokemonViewProtocol?
+    var interactor : PokemonIneractorProtocol?
+    var router: PokemonRouterProtocol?
     
     
     
@@ -40,6 +30,7 @@ class PokemonPresenter : AnyPokemonPresenter {
     func userDidAddToFav(pokemon : RealmModel) {
         interactor?.addPokemonToFav(pokemon :pokemon)
     }
+    
     
     
     

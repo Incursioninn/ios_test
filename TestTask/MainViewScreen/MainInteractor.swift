@@ -7,19 +7,12 @@
 import RealmSwift
 import Foundation
 
-protocol AnyMainInteractor {
-    
-    func fetchPokemons(offset:Int)
-    var presenter : AnyMainPresenter? {get set}
-    func showFavs()
-    
-}
 
-class MainInteractor: AnyMainInteractor {
+
+class MainInteractor: MainInteractorProtocol {
     
-    var presenter : AnyMainPresenter?
+    weak var presenter : InteractorToPresenterProtocol?
     
-    let realm = try! Realm()
     
     func fetchPokemons(offset : Int) {
         guard let url = URL(string : "https://pokeapi.co/api/v2/pokemon?limit=50&offset=\(offset)") else {return}
@@ -27,7 +20,7 @@ class MainInteractor: AnyMainInteractor {
             guard let data = data else {
                 DispatchQueue.main.async {
                     let pokesFromRealm : [RealmModel] = RealmModel.getData()
-                    self.presenter?.view?.update(with: pokesFromRealm)
+                    self.presenter?.interactorDidFetchPokemons(with: pokesFromRealm)
                     
                 }
                 return
@@ -51,13 +44,11 @@ class MainInteractor: AnyMainInteractor {
             URLSession.shared.dataTask(with: url , completionHandler :{ (data,response,error) in
                 guard let data = data else {return}
                 let pokemon = try! JSONDecoder().decode(OnePokemon.self, from: data)
-                
-                let finalPokemon = RealmModel(name: pokemonInfo.name, id: pokemon.id, weight: pokemon.weight , height: pokemon.height, sprite: pokemon.sprites.front_default , localSprite: "")
-                
-                
+                let isFav = PokemonFavsService.shared.getFavs().contains(pokemon.id)
+                let finalPokemon = RealmModel(name: pokemonInfo.name, id: pokemon.id, weight: pokemon.weight , height: pokemon.height, sprite: pokemon.sprites.front_default , localSprite: "" , isFavourite: isFav)
                 DispatchQueue.main.async {
-                    try! self.realm.write() {
-                        self.realm.add(finalPokemon , update: .all)
+                    try! RealmModel.realm.write() {
+                        RealmModel.realm.add(finalPokemon , update: .all)
                     }
                 }
                 
@@ -73,7 +64,7 @@ class MainInteractor: AnyMainInteractor {
     
     func showFavs() {
         let pokemons = RealmModel.getData()
-        let favsIDs = UserDefaults.standard.array(forKey: "Favs") as? [Int] ?? []
+        let favsIDs = PokemonFavsService.shared.getFavs()
         presenter?.didSelectFavs(favs : pokemons.filter {favsIDs.contains($0.id)})
     }
     
