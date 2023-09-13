@@ -43,33 +43,33 @@ class MainViewController: UIViewController , MainViewProtocol {
     
     
     func update(with pokemons : RealmModel) {
-            self.connectionProblemsLabel.isHidden = true
+            connectionProblemsLabel.isHidden = true
             self.pokemons.append(pokemons)
             let path = IndexPath(row: self.pokemons.count-1, section: 0)
-            self.pokemonTableView.beginUpdates()
-            self.pokemonTableView.insertRows(at: [path], with: .left)
-            self.pokemonTableView.endUpdates()
-            self.progressValue += self.progressValueOffset
-            self.progressBar.setProgress(Float(self.progressValue), animated: true)
-            if self.progressValue >= 1.0 {
-                self.progressBar.isHidden = true
+            pokemonTableView.beginUpdates()
+            pokemonTableView.insertRows(at: [path], with: .left)
+            pokemonTableView.endUpdates()
+            progressValue += self.progressValueOffset
+            progressBar.setProgress(Float(progressValue), animated: true)
+            if progressValue >= 1.0 {
+                progressBar.isHidden = true
             }
         
     }
     
     func update(with pokemons : [RealmModel]) {
-            self.progressValue = 1.0
-            self.connectionProblemsLabel.isHidden = false
+            progressValue = 1.0
+            connectionProblemsLabel.isHidden = false
             self.pokemons = pokemons
-            self.progressBar.isHidden = true
-            self.pokemonTableView.reloadData()
+            progressBar.isHidden = true
+            pokemonTableView.reloadData()
         
     }
     
     func updateWithFavs (favs : [RealmModel]) {
-        self.pokemons = favs
-        self.favPokemons = favs
-        self.pokemonTableView.reloadData()
+        pokemons = favs
+        favPokemons = favs
+        pokemonTableView.reloadData()
     }
     
     @objc func showFavs (paramTarget : UISwitch) {
@@ -79,7 +79,7 @@ class MainViewController: UIViewController , MainViewProtocol {
         }
         else {
             pokemons = tempPokemons
-            self.pokemonTableView.reloadData()
+            pokemonTableView.reloadData()
         }
         
         
@@ -110,7 +110,7 @@ extension MainViewController : UITableViewDelegate , UITableViewDataSource , UIS
         }
         else {
             cell.imageView?.downloadAndSavePokemonImage(link: pokeUrl, pokeName: pokeName)
-            //pokemonTableView.reloadRows(at: [indexPath], with: .none)
+            pokemonTableView.reloadRows(at: [indexPath], with: .none)
         }
 
         return cell
@@ -170,8 +170,8 @@ extension MainViewController : UITableViewDelegate , UITableViewDataSource , UIS
             }
         }
 
-        self.pokemons = filterPokemons
-        self.pokemonTableView.reloadData()
+        pokemons = filterPokemons
+        pokemonTableView.reloadData()
     }
     
     
